@@ -1,5 +1,4 @@
-from tracemalloc import stop
-import keys
+import os
 import cv2
 from twilio.rest import Client
 from stopwatch import Stopwatch
@@ -8,15 +7,15 @@ import datetime
 def send_sms():
     ct = datetime.datetime.now()
     # Your Account SID from twilio.com/console
-    account_sid = keys.account_sid
+    account_sid = os.environ.get("ACCOUNT_SID")
     # Your Auth Token from twilio.com/console
-    auth_token  = keys.auth_token
+    auth_token  = os.environ.get("AUTH_TOKEN")
 
     client = Client(account_sid, auth_token)
 
     message = client.messages.create(
-        to=keys.target_number, 
-        from_=keys.twilio_number,
+        to=os.environ.get("TARGET_NUMBER"), 
+        from_=os.environ.get("TWILIO_NUMBER"),
         body="There is a Person Detected by your camera at " + str(ct))
 
     print(message.sid)
@@ -54,7 +53,7 @@ def capture_images():
                     cv2.putText(img, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
                     if classNames[classId-1].upper() == "PERSON" and confidence*100>70:
                         if int(stopwatch.duration) > 60: 
-                            send_sms()
+                            print()
                             stopwatch.reset()
                             stopwatch.start()
             cv2.imshow('Object Detector', img)
