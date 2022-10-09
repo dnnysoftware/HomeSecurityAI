@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "boto",
         "confs",
+        "fourcc",
         "imshow",
+        "MJPG",
         "mobilenet",
         "objectdetection",
         "pbtxt"

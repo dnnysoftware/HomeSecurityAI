@@ -1,11 +1,13 @@
 import os
+import boto3
 import cv2
 from twilio.rest import Client
 from stopwatch import Stopwatch
 import datetime
 
-def send_sms():
-    ct = datetime.datetime.now()
+
+def send_sms(ct):
+    ct = datetime.datetime.now().replace(microsecond=0)
 
     account_sid = os.environ.get("ACCOUNT_SID")
 
@@ -16,14 +18,25 @@ def send_sms():
     message = client.messages.create(
         to=os.environ.get("TARGET_NUMBER"), 
         from_=os.environ.get("TWILIO_NUMBER"),
-        body="There is a Person Detected by your camera at " + str(ct))
+        body="There was a Person Detected by your camera at " + str(ct))
 
     print(message.sid)
 
 def capture_images():
-    cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    ct = datetime.datetime.now().replace(microsecond=0)
+
+    video = cv2.VideoCapture(0)
+    video.set(3, 640)
+    video.set(4, 480)
+    if video.isOpened() == False:
+        print("Error reading video file")
+
+    frame_width = int(video.get(3))
+    frame_height = int(video.get(4))
+    size = (frame_width, frame_height)
+    result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
+                         cv2.VideoWriter_fourcc(*'MJPG'),
+                         10, size)
 
     classNames = []
     classFile = 'objectdetection/coco.names'
@@ -43,28 +56,46 @@ def capture_images():
     stopwatch.start()
     while True:
         try: 
-            _ , img = cap.read()
-            classIds, confs, bbox = net.detect(img, confThreshold=0.5)
-            print(classIds, bbox)
+            _ , frame = video.read()
+            classIds, confs, bbox = net.detect(frame, confThreshold=0.5)
+            print(classIds, bbox)          
             if len(classIds) != 0:
                 for classId, confidence, box in zip(classIds.flatten(), confs.flatten(), bbox):
-                    cv2.rectangle(img, box, color=(0,255,0), thickness=2)
-                    cv2.putText(img, classNames[classId-1].upper(), (box[0]+10, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
-                    cv2.putText(img, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
+                    cv2.rectangle(frame, box, color=(0,255,0), thickness=2)
+                    cv2.putText(frame, classNames[classId-1].upper(), (box[0]+10, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
+                    cv2.putText(frame, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
                     if classNames[classId-1].upper() == "PERSON" and confidence*100>70:
                         if int(stopwatch.duration) > 60: 
-                            send_sms()
+                            send_sms(ct)
                             stopwatch.reset()
                             stopwatch.start()
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            cv2.imshow('Object Detector', img)
-            cv2.waitKey(1)
+            result.write(frame)
+            cv2.imshow('Object Detector', frame)
+            
         except:
             continue
+    video.release()
+    result.release()
+    cv2.destroyAllWindows()
+
+def post_media():
+    client_s3 = boto3.client('s3', 
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
+
+    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/media')
+    for file in os.listdir(data_file_folder):
+        if not file.startswith('.'):
+            client_s3.upload_file(os.path.join(data_file_folder, file),
+            os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
+        os.remove(os.path.join(data_file_folder, file))
 
 def main():
     capture_images()
+    post_media()
+    
 
 
 if __name__ == "__main__":
