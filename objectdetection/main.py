@@ -53,7 +53,7 @@ def capture_images():
                     cv2.putText(img, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
                     if classNames[classId-1].upper() == "PERSON" and confidence*100>70:
                         if int(stopwatch.duration) > 60: 
-                            print()
+                            send_sms()
                             stopwatch.reset()
                             stopwatch.start()
             cv2.imshow('Object Detector', img)
