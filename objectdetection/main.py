@@ -94,9 +94,12 @@ def capture_images():
             cv2.imshow('Object Detector', frame)
         except:
             continue
-    video.release()
-    result.release()
-    cv2.destroyAllWindows()
+    try:
+        video.release()
+        result.release()
+        cv2.destroyAllWindows()
+    finally:
+        print("No videos to upload")
 
 def post_media():
     client_s3 = boto3.client('s3', 
