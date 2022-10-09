@@ -6,9 +6,9 @@ import datetime
 
 def send_sms():
     ct = datetime.datetime.now()
-    # Your Account SID from twilio.com/console
+
     account_sid = os.environ.get("ACCOUNT_SID")
-    # Your Auth Token from twilio.com/console
+
     auth_token  = os.environ.get("AUTH_TOKEN")
 
     client = Client(account_sid, auth_token)
@@ -43,7 +43,7 @@ def capture_images():
     stopwatch.start()
     while True:
         try: 
-            success, img = cap.read()
+            _ , img = cap.read()
             classIds, confs, bbox = net.detect(img, confThreshold=0.5)
             print(classIds, bbox)
             if len(classIds) != 0:
@@ -56,6 +56,8 @@ def capture_images():
                             send_sms()
                             stopwatch.reset()
                             stopwatch.start()
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
             cv2.imshow('Object Detector', img)
             cv2.waitKey(1)
         except:
