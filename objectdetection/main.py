@@ -1,5 +1,4 @@
 import os
-from time import sleep
 import boto3
 import cv2
 from twilio.rest import Client
@@ -8,6 +7,7 @@ import datetime
 
 
 def send_sms(ct):
+
     ct = datetime.datetime.now().replace(microsecond=0)
 
     account_sid = os.environ.get("ACCOUNT_SID")
@@ -19,11 +19,13 @@ def send_sms(ct):
     message = client.messages.create(
         to=os.environ.get("TARGET_NUMBER"), 
         from_=os.environ.get("TWILIO_NUMBER"),
-        body="There was a Person Detected by your camera at " + str(ct))
+        body="There was somebody detected by your camera at " + str(ct))
 
     print(message.sid)
 
 def capture_images():
+    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/Video')
+
     ct = datetime.datetime.now().replace(microsecond=0)
 
     video = cv2.VideoCapture(0)
@@ -32,12 +34,6 @@ def capture_images():
     if video.isOpened() == False:
         print("Error reading video file")
 
-    # frame_width = int(video.get(3))
-    # frame_height = int(video.get(4))
-    # size = (frame_width, frame_height)
-    # result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
-    #                      cv2.VideoWriter_fourcc(*'MJPG'),
-    #                      10, size)
 
     classNames = []
     classFile = 'objectdetection/coco.names'
@@ -75,7 +71,7 @@ def capture_images():
                             frame_height = int(video.get(4))
                             size = (frame_width, frame_height)
                             ct = datetime.datetime.now().replace(microsecond=0)
-                            result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
+                            result = cv2.VideoWriter("objectdetection/Video/{}.avi".format(str(ct)), 
                                                 cv2.VideoWriter_fourcc(*'MJPG'),
                                                 10, size)
                             isPersonActive = True
@@ -88,9 +84,9 @@ def capture_images():
                 result.write(frame)
                 if int(personMissingStopwatch.duration) > 30:
                     result.release()
-                    post_media()
                     isPersonActive = False
                     personMissingStopwatch.reset()
+                    post_video()
             cv2.imshow('Object Detector', frame)
         except:
             continue
@@ -98,25 +94,31 @@ def capture_images():
         video.release()
         result.release()
         cv2.destroyAllWindows()
-    finally:
+    except:
         print("No videos to upload")
+    finally:
+        clear_local_videos(data_file_folder)
 
-def post_media():
+def clear_local_videos(data_file_folder):
+    for file in os.listdir(data_file_folder):
+        os.remove(os.path.join(data_file_folder, file))
+
+def post_video():
     client_s3 = boto3.client('s3', 
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
 
-    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/media')
+    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/Video')
     for file in os.listdir(data_file_folder):
         if not file.startswith('~'):
             client_s3.upload_file(os.path.join(data_file_folder, file),
             os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
         os.remove(os.path.join(data_file_folder, file))
 
+
 def main():
     capture_images()
     
-
 
 if __name__ == "__main__":
     main()
