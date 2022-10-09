@@ -1,4 +1,5 @@
 import os
+from time import sleep
 import boto3
 import cv2
 from twilio.rest import Client
@@ -31,12 +32,12 @@ def capture_images():
     if video.isOpened() == False:
         print("Error reading video file")
 
-    frame_width = int(video.get(3))
-    frame_height = int(video.get(4))
-    size = (frame_width, frame_height)
-    result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
-                         cv2.VideoWriter_fourcc(*'MJPG'),
-                         10, size)
+    # frame_width = int(video.get(3))
+    # frame_height = int(video.get(4))
+    # size = (frame_width, frame_height)
+    # result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
+    #                      cv2.VideoWriter_fourcc(*'MJPG'),
+    #                      10, size)
 
     classNames = []
     classFile = 'objectdetection/coco.names'
@@ -52,28 +53,45 @@ def capture_images():
     net.setInputMean((127.5, 127.5, 127.5))
     net.setInputSwapRB(True)
     
-    stopwatch = Stopwatch(0)
-    stopwatch.start()
+    result = 0
+    isPersonActive = False
+    personMissingStopwatch = Stopwatch(0)
+    personMissingStopwatch.reset()
     while True:
         try: 
             _ , frame = video.read()
             classIds, confs, bbox = net.detect(frame, confThreshold=0.5)
-            print(classIds, bbox)          
+            print(personMissingStopwatch.duration, classIds, bbox)      
             if len(classIds) != 0:
                 for classId, confidence, box in zip(classIds.flatten(), confs.flatten(), bbox):
                     cv2.rectangle(frame, box, color=(0,255,0), thickness=2)
                     cv2.putText(frame, classNames[classId-1].upper(), (box[0]+10, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
                     cv2.putText(frame, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
                     if classNames[classId-1].upper() == "PERSON" and confidence*100>70:
-                        if int(stopwatch.duration) > 60: 
+                        personMissingStopwatch.reset()
+                        personMissingStopwatch.stop()
+                        if not isPersonActive:
+                            frame_width = int(video.get(3))
+                            frame_height = int(video.get(4))
+                            size = (frame_width, frame_height)
+                            ct = datetime.datetime.now().replace(microsecond=0)
+                            result = cv2.VideoWriter("objectdetection/media/{}.avi".format(str(ct)), 
+                                                cv2.VideoWriter_fourcc(*'MJPG'),
+                                                10, size)
+                            isPersonActive = True
                             send_sms(ct)
-                            stopwatch.reset()
-                            stopwatch.start()
+                    elif classNames[classId-1].upper() != "PERSON" and isPersonActive and int(personMissingStopwatch.duration) == 0:
+                        personMissingStopwatch.start()        
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            result.write(frame)
+            if isPersonActive:
+                result.write(frame)
+                if int(personMissingStopwatch.duration) > 30:
+                    result.release()
+                    post_media()
+                    isPersonActive = False
+                    personMissingStopwatch.reset()
             cv2.imshow('Object Detector', frame)
-            
         except:
             continue
     video.release()
@@ -87,14 +105,13 @@ def post_media():
 
     data_file_folder = os.path.join(os.getcwd(), 'objectdetection/media')
     for file in os.listdir(data_file_folder):
-        if not file.startswith('.'):
+        if not file.startswith('~'):
             client_s3.upload_file(os.path.join(data_file_folder, file),
             os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
         os.remove(os.path.join(data_file_folder, file))
 
 def main():
     capture_images()
-    post_media()
     
 
 
