@@ -29,8 +29,8 @@ def capture_images():
     ct = datetime.datetime.now().replace(microsecond=0)
 
     video = cv2.VideoCapture(0)
-    video.set(3, 640)
-    video.set(4, 480)
+    video.set(3, 1280)
+    video.set(4, 720)
     if video.isOpened() == False:
         print("Error reading video file")
 
@@ -71,8 +71,8 @@ def capture_images():
                             frame_height = int(video.get(4))
                             size = (frame_width, frame_height)
                             ct = datetime.datetime.now().replace(microsecond=0)
-                            result = cv2.VideoWriter("objectdetection/Video/{}.avi".format(str(ct)), 
-                                                cv2.VideoWriter_fourcc(*'MJPG'),
+                            result = cv2.VideoWriter("objectdetection/Video/{}.webm".format(str(ct)), 
+                                                cv2.VideoWriter_fourcc('V','P','8','0'),
                                                 10, size)
                             isPersonActive = True
                             send_sms(ct)

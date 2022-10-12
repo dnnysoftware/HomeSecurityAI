@@ -5,6 +5,7 @@
         "confs",
         "fourcc",
         "imshow",
+        "mjpeg",
         "MJPG",
         "mobilenet",
         "objectdetection",
