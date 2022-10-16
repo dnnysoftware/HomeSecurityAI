@@ -1,20 +1,20 @@
 import os
 from twilio.rest import Client
-import datetime
 
-def send_sms(ct):
+class SMS:
+    def __init__(self, ct):
+        self.time = ct
+        self.account_sid = os.environ.get("ACCOUNT_SID")
+        self.auth_token  = os.environ.get("AUTH_TOKEN")
+        self.to_ = os.environ.get("TARGET_NUMBER")
+        self.from_ = os.environ.get("TWILIO_NUMBER")
 
-    ct = datetime.datetime.now().replace(microsecond=0)
 
-    account_sid = os.environ.get("ACCOUNT_SID")
+    def send_sms(self):
+        client = Client(self.account_sid, self.auth_token)
+        message = client.messages.create(
+            to=self.to_, 
+            from_=self.from_,
+            body="There was somebody detected by your camera at " + str(self.time))
 
-    auth_token  = os.environ.get("AUTH_TOKEN")
-
-    client = Client(account_sid, auth_token)
-
-    message = client.messages.create(
-        to=os.environ.get("TARGET_NUMBER"), 
-        from_=os.environ.get("TWILIO_NUMBER"),
-        body="There was somebody detected by your camera at " + str(ct))
-
-    print(message.sid)
+        print(message.sid)

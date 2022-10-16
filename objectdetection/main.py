@@ -1,38 +1,17 @@
 import os
-import boto3
 import cv2
-from twilio.rest import Client
 from stopwatch import Stopwatch
 import datetime
-
-
-def send_sms(ct):
-
-    ct = datetime.datetime.now().replace(microsecond=0)
-
-    account_sid = os.environ.get("ACCOUNT_SID")
-
-    auth_token  = os.environ.get("AUTH_TOKEN")
-
-    client = Client(account_sid, auth_token)
-
-    message = client.messages.create(
-        to=os.environ.get("TARGET_NUMBER"), 
-        from_=os.environ.get("TWILIO_NUMBER"),
-        body="There was somebody detected by your camera at " + str(ct))
-
-    print(message.sid)
+import asyncio
+import aioboto3
+from src.sms import SMS
+from src.video import Video
+from src.classification_model import Classification_Model
 
 def capture_images():
-    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/Video')
 
-    ct = datetime.datetime.now().replace(microsecond=0)
-
-    video = cv2.VideoCapture(0)
-    video.set(3, 1280)
-    video.set(4, 720)
-    if video.isOpened() == False:
-        print("Error reading video file")
+    vid = Video()
+    video = vid.create_video()
 
 
     classNames = []
@@ -40,14 +19,8 @@ def capture_images():
     with open(classFile, 'rt') as f:
         classNames = f.read().rstrip('\n').split('\n') 
 
-    configPath = 'objectdetection/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
-    weightsPath = 'objectdetection/frozen_inference_graph.pb'
-
-    net = cv2.dnn_DetectionModel(weightsPath, configPath)
-    net.setInputSize(320,320)
-    net.setInputScale(1.0/127.5)
-    net.setInputMean((127.5, 127.5, 127.5))
-    net.setInputSwapRB(True)
+    ai = Classification_Model()
+    net = ai.create_model()
     
     result = 0
     isPersonActive = False
@@ -75,7 +48,8 @@ def capture_images():
                                                 cv2.VideoWriter_fourcc('V','P','8','0'),
                                                 10, size)
                             isPersonActive = True
-                            send_sms(ct)
+                            sms = SMS(ct)
+                            sms.send_sms()
                     elif classNames[classId-1].upper() != "PERSON" and isPersonActive and int(personMissingStopwatch.duration) == 0:
                         personMissingStopwatch.start()        
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -86,7 +60,6 @@ def capture_images():
                     result.release()
                     isPersonActive = False
                     personMissingStopwatch.reset()
-                    post_video()
             cv2.imshow('Object Detector', frame)
         except:
             continue
@@ -97,36 +70,10 @@ def capture_images():
     except:
         print("No videos to upload")
     finally:
-        clear_local_videos(data_file_folder)
-
-def clear_local_videos(data_file_folder):
-    for file in os.listdir(data_file_folder):
-        os.remove(os.path.join(data_file_folder, file))
-
-def post_video():
-    client_s3 = boto3.client('s3', 
-    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
-    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
-
-    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/Video')
-    for file in os.listdir(data_file_folder):
-        if not file.startswith('~'):
-            client_s3.upload_file(os.path.join(data_file_folder, file),
-            os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
-        os.remove(os.path.join(data_file_folder, file))
+        asyncio.run(vid.async_post_videos())
+        vid.clear_local_videos(vid.data_file_folder)
 
 
-def async_post_video():
-    client_s3 = boto3.client('s3', 
-    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
-    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
-
-    data_file_folder = os.path.join(os.getcwd(), 'objectdetection/Video')
-    for file in os.listdir(data_file_folder):
-        if not file.startswith('~'):
-            client_s3.upload_file(os.path.join(data_file_folder, file),
-            os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
-        os.remove(os.path.join(data_file_folder, file))
 
 def main():
     capture_images()
