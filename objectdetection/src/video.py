@@ -1,6 +1,7 @@
 import os
 import cv2
 import aioboto3
+from src.sms import SMS
 
 class Video:
 
@@ -23,7 +24,6 @@ class Video:
                             cv2.VideoWriter_fourcc('V','P','8','0'),
                             10, size)
         return recorder
-    
 
     def clear_videos(self, data_file_folder):
         for file in os.listdir(data_file_folder):

@@ -29,15 +29,11 @@ class Classification_Model:
         cv2.putText(frame, class_names[classId-1].upper(), (box[0]+10, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
         cv2.putText(frame, str(round(confidence*100, 2)),(box[0]+150, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2) 
 
-    def classified_person(self, stopwatch, vid, video):
-        stopwatch.reset()
-        stopwatch.stop()
-        if not isPersonActive:
-            ct = datetime.datetime.now().replace(microsecond=0)
-            result = vid.record_video(ct, video)
-            sms = SMS(ct)
-            sms.send_sms()
-            isPersonActive = True
+    def classified_new_person(self, vid, video):
+        ct = datetime.datetime.now().replace(microsecond=0)
+        result = vid.record_video(ct, video)
+        sms = SMS(ct)
+        sms.send_sms()
+        return result
+    
 
-    def process_video(self):
-        print()
