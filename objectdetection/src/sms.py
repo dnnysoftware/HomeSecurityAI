@@ -1,6 +1,9 @@
 import os
 from twilio.rest import Client
 
+"""
+SMS Class responsible for sending messages to client
+"""
 class SMS:
     def __init__(self, ct):
         self.time = ct
