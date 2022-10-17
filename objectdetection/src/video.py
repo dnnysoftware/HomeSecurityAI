@@ -1,8 +1,5 @@
 import os
 import cv2
-from stopwatch import Stopwatch
-import datetime
-import asyncio
 import aioboto3
 
 class Video:
