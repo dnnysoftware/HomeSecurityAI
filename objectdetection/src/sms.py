@@ -8,8 +8,8 @@ class SMS:
 
     def __init__(self, ct):
         self.time = ct
-        self.account_sid = config('ACCOUNT_SID')
-        self.auth_token  = config("AUTH_TOKEN")
+        self.account_sid = config('SMS_ACCOUNT_SID')
+        self.auth_token  = config("SMS_AUTH_TOKEN")
         self.to_ = config("TARGET_NUMBER")
         self.from_ = config("TWILIO_NUMBER")
 

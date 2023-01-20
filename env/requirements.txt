@@ -1,0 +1,5 @@
+aioboto3==10.1.0
+opencv-python==4.6.0.66
+twilio==7.14.2
+python-decouple==3.7
+stopwatch.py==2.0.1
