@@ -4,7 +4,14 @@ import asyncio
 from src.video import Video
 from src.class_detect_model import Classification_Detection_Model
 
+
 def security_program():
+    """ Creates the video to be displayed, creates the object classification and detection
+    model, then begins surveying environment data within capture() and records the video from
+    the display once it classifies a person, saves that recording to a local directory until the
+    recording is quit by pressing 'q' on the display, uploads all stored videos to AWS s3 and removes
+    all videos from local directory.
+    """
     vid = Video()
     video = vid.create_video()
 
@@ -17,6 +24,14 @@ def security_program():
     vid.clear_videos()
     
 def capture(vid, video, net, ai, class_names):
+    """ Captures the video, records the video once classId/ className is a Person based on
+    the COCO image dataset and having a confidence of > 70% . Once recording checks if classified
+    "Person" is gone and starts a counter, once that counter reaches 30 seconds then saves the recording
+    and begins surveying for the next instance of "Person" from the environment.
+
+    The user needs to key press 'q' on the cv2 display to upload the videos to s3 which in turn quits the 
+    program soon after.
+    """
     result = None
     is_active = False
     stopwatch = Stopwatch(0)
