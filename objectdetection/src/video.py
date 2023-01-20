@@ -44,7 +44,7 @@ class Video:
             os.remove(os.path.join(self.data_file_folder, file))
     
     async def post_videos(self):
-        """_summary_
+        """ asynchronously post videos into AWS s3 bucket.
         """
         client_session = aioboto3.Session(aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"), aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
         async with client_session.client('s3') as client_s3:
