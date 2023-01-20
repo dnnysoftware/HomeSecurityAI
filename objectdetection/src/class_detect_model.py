@@ -2,8 +2,11 @@ import cv2
 import datetime
 from src.sms import SMS
 
-
-class Classification_Model:
+"""
+Handles creation, association of Classification/ Detection Model and handles
+human identification
+"""
+class Classification_Detection_Model:
 
     def __init__(self):
         self.config_path = 'objectdetection/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
@@ -52,8 +55,12 @@ class Classification_Model:
         """
         ct = datetime.datetime.now().replace(microsecond=0)
         result = vid.record_video(ct, video)
-        sms = SMS(ct)
-        sms.send_sms()
-        return result
+        try:
+            sms = SMS(ct)
+            sms.send_sms()
+        except:
+            raise Exception("SMS Message not able to be delivered")
+        finally:
+            return result
     
 

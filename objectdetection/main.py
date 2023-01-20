@@ -2,19 +2,19 @@ import cv2
 from stopwatch import Stopwatch
 import asyncio
 from src.video import Video
-from src.classification_model import Classification_Model
+from src.class_detect_model import Classification_Detection_Model
 
 def security_program():
     vid = Video()
     video = vid.create_video()
 
-    ai = Classification_Model()
+    ai = Classification_Detection_Model()
     net = ai.create_model()
     class_names = ai.get_object_classifiers()
     
     capture(vid, video, net, ai, class_names)
     asyncio.run(vid.post_videos())
-    vid.clear_videos(vid.data_file_folder)
+    vid.clear_videos()
     
 def capture(vid, video, net, ai, class_names):
     result = None
