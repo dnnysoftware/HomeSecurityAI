@@ -1,6 +1,7 @@
 import os
 import cv2
 import aioboto3
+from decouple import config
 
 """
 Responsible for creating video display, recording video from that display, 
@@ -46,13 +47,15 @@ class Video:
     async def post_videos(self):
         """ asynchronously post videos into AWS s3 bucket.
         """
-        client_session = aioboto3.Session(aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"), aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"))
+        client_session = aioboto3.Session(aws_access_key_id=config("AWS_ACCESS_KEY"), 
+        aws_secret_access_key=config("AWS_SECRET_KEY"))
         async with client_session.client('s3') as client_s3:
             for file in os.listdir(self.data_file_folder):
                 if not file.startswith('~'):
                     try:
                         print("UPLOADING FILE: {}".format(file))
-                        await client_s3.upload_file(os.path.join(self.data_file_folder, file), os.environ.get("AWS_SECURITY_BUCKET_NAME"), file)
+                        await client_s3.upload_file(os.path.join(self.data_file_folder, file), 
+                        config("AWS_SECURITY_BUCKET_NAME"), file)
                         print("UPLOAD COMPLETE")
                     except Exception as e:
                         print("Error Upload: {}".format(e))
