@@ -1,7 +1,6 @@
 import os
 import cv2
 import aioboto3
-from src.sms import SMS
 
 class Video:
 

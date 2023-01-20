@@ -1,5 +1,6 @@
 import os
 from twilio.rest import Client
+import datetime
 
 """
 SMS Class responsible for sending messages to client
@@ -14,10 +15,10 @@ class SMS:
 
 
     def send_sms(self):
+        
         client = Client(self.account_sid, self.auth_token)
         message = client.messages.create(
             to=self.to_, 
             from_=self.from_,
             body="There was somebody detected by your camera at " + str(self.time))
-
         print(message.sid)

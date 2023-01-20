@@ -38,6 +38,7 @@ def capture(vid, video, net, ai, class_names):
                     elif class_names[classId-1].upper() != "PERSON" and is_active and int(stopwatch.duration) == 0:
                         stopwatch.start()        
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
                 break
             if is_active:
                 result.write(frame)
@@ -48,7 +49,7 @@ def capture(vid, video, net, ai, class_names):
             cv2.imshow('Object Detector', frame)
         except:
             continue
-    cv2.destroyAllWindows()
+    
 
 def main():
     security_program()
