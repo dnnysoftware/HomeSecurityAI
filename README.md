@@ -79,7 +79,7 @@ Clone the repository, via HTTP or SSH above, all dependencies have been added to
   ```sh
   git clone https://github.com/dnnysoftware/HomeSecurityAI.git
   ```
-3. Enter your API in `.env`
+3. Create & Enter your API Keys in `.env`
   ```python
   SMS_ACCOUNT_SID='Twilio Account SID Key'
   SMS_AUTH_TOKEN='Twilio Authentication Token'
