@@ -1,7 +1,6 @@
 <a name="readme-top"></a>
 
 [![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg)
-[![Ask Me Anything !](https://img.shields.io/badgeAsk%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
@@ -20,10 +19,9 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><<a href="#installation">Installation</a></li>
   </ol>
 </details>
 
@@ -32,7 +30,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![MY SECURITY CAMERA DEMO][product-screenshot]](https://example.com)
+![MY SECURITY CAMERA DEMO](img/demo-screenshot.png)
 
 This Project is supposed to simulate a security camera system like Amazon's RING product in which the algorithm notices human movement by object detection and classification then begins recording and uploads the video instance to the cloud in this case AWS s3.
 
@@ -78,11 +76,11 @@ Clone the repository, via HTTP or SSH above, all dependencies have been added to
 * [Create Your Own AWS S3 Cloud Database](https://aws.amazon.com/pm/serv-s3/)
 * [Get You Own Twilio SMS Keys](https://www.twilio.com/docs/sms)
 2. Clone the repo
-   ```sh
-   git clone https://github.com/dnnysoftware/HomeSecurityAI.git
-   ```
+  ```sh
+  git clone https://github.com/dnnysoftware/HomeSecurityAI.git
+  ```
 3. Enter your API in `.env`
-   ```python
+  ```python
   SMS_ACCOUNT_SID='Twilio Account SID Key'
   SMS_AUTH_TOKEN='Twilio Authentication Token'
   TWILIO_NUMBER='Twilio Generated Phone Number For Testing'
@@ -90,11 +88,13 @@ Clone the repository, via HTTP or SSH above, all dependencies have been added to
   AWS_ACCESS_KEY='AWS s3 Access Token'
   AWS_SECRET_KEY='AWS s3 Secret Token'
   AWS_SECURITY_BUCKET_NAME='AWS Name Of Your Created Bucket'
-   ```
-4. Install NPM packages
+  ```
+4. Run Program
   * In root directory run by typing in CLI
-   ```sh
-    ./run.sh
-   ```
+  ```sh
+  ./run.sh
+  ```
+5. Quit Program
+  * Quit by key press 'q' in CV2 display
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
